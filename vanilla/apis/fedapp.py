@@ -14,18 +14,18 @@ logger = get_logger(__name__)
 #####################################
 # Make a custom response
 
-## OPTION 1
+# OPTION 1
 
-# @decorate.custom_response
-# def fedapp_response(
-#         defined_content=None,
-#         code=None,
-#         errors={},
-#         headers={}):
+@decorate.custom_response
+def fedapp_response(
+        defined_content=None,
+        code=None,
+        errors={},
+        headers={}):
 
-#     return ExtendedApiResource.flask_response("Hello")
+    return ExtendedApiResource.flask_response("Hello")
 
-## OPTION 2
+# # OPTION 2
 
 # class Response(ExtendedApiResource):
 #     def fedapp_response(self, *args, **kwargs):
@@ -60,8 +60,17 @@ class Catalog(ExtendedApiResource):
 
         # ####################
         # # Testing returns
-        return self.report_generic_error()
+        # return self.report_generic_error()
         # return self.force_response(errors="failed")
         # return {'errors': 'test', 'defined_content': None}
         # return self.response(hello)
+
         return hello
+
+    # @auth.login_required
+    @decorate.apimethod
+    def post(self):
+
+        input_json = self.get_input()
+        print("INPUT", input_json)
+        return input_json

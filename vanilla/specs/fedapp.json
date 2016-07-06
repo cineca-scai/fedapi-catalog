@@ -1,8 +1,10 @@
 // B2SAFE REST API configuration
 {
+    "custom.response": {},
+
     "custom.fedapp": {
         "Catalog": [
-            "catalog"
+            "dataobjects"
             //"dataobjects/<string:uuid>"
         ]
     }

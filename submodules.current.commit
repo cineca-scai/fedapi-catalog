@@ -1,2 +1,2 @@
-93b400e Fixing the custom response example.
+548aa97 Bug fix for json decoding parameters inside logging of the server
 * master

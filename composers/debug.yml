@@ -17,3 +17,6 @@ graphdb:
 apitests:
   links:
     - rest:apiserver
+  working_dir: /code
+  volumes:
+    - ./vanilla/clients:/code

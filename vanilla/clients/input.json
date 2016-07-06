@@ -1,0 +1,15 @@
+{
+        "checksum": "thisisjust4fakechecksum12345",
+        "created": "123456789.012",
+        "updated": "123456789.013",
+        "description": "General description of the digital entity",
+        "format": "PDF",
+        "owner": "pdonorio",
+        "locations": [
+            {
+                "created": "123456789.012",
+                "url": "http://some.url/test"
+            }
+        ],
+        "size": "1048"
+}
