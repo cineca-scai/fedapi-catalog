@@ -23,13 +23,20 @@ headers = {
 main_uri = URL + 'dataobjects'
 
 with open("input.json", encoding='utf-8') as f:
-    # Write
-    data = json.load(f)
-    r = requests.post(main_uri, data=json.dumps(data))
+
+    # Ask id
+    r = requests.post(main_uri)
     out = r.json()
     print("TEST", out)
 
-# # Read
+    # Update metadata
+    data = json.load(f)
+    # add uuid to json data
+    # r = requests.put(main_uri, data=json.dumps(data))
+    # out = r.json()
+    # print("TEST", out)
+
+# # Get results
 # r = requests.get(main_uri)
 # out = r.json()
 # print("TEST", out)

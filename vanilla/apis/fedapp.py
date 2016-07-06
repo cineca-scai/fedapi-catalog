@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import
 from commons.logs import get_logger
+from commons.services.uuid import getUUID
 from ..base import ExtendedApiResource
 from .. import decorators as decorate
 
@@ -12,45 +13,18 @@ logger = get_logger(__name__)
 
 
 #####################################
-# Make a custom response
-
-# OPTION 1
-
-@decorate.custom_response
-def fedapp_response(
-        defined_content=None,
-        code=None,
-        errors={},
-        headers={}):
-
-    return ExtendedApiResource.flask_response("Hello")
-
-# # OPTION 2
-
-# class Response(ExtendedApiResource):
-#     def fedapp_response(self, *args, **kwargs):
-#         return self.flask_response("Hello")
-
-# decorate.custom_response(Response().fedapp_response)
-
-
-#####################################
 class Catalog(ExtendedApiResource):
 
     _index_name = 'fedapp'
 
     # @auth.login_required
     @decorate.apimethod
-    def get(self):
+    def get(self, uuid=None):
 
         hello = "Hello world"
         logger.info(hello)
 
-        # ####################
-        # # Test graph
-        # graph = self.global_get_service('neo4j')
-        # queryout = graph.cypher("MATCH (n) RETURN (n)")
-        # print(queryout)
+        graph = self.global_get_service('neo4j')
 
         # ####################
         # # Test elastic
@@ -70,7 +44,27 @@ class Catalog(ExtendedApiResource):
     # @auth.login_required
     @decorate.apimethod
     def post(self):
+        """ Register a UUID """
 
+        # Create UUID
+        uuid = getUUID()
+
+        # Create graph object
+        graph = self.global_get_service('neo4j')
+
+        # Return the UUID
+        return uuid
+
+    # @auth.login_required
+    @decorate.apimethod
+    def put(self, uuid):
+        """ Update data with some """
+
+        # Receive data
         input_json = self.get_input()
         print("INPUT", input_json)
+
+        # Update the graph
+
+        # Return the UUID
         return input_json

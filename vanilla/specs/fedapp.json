@@ -4,8 +4,8 @@
 
     "custom.fedapp": {
         "Catalog": [
-            "dataobjects"
-            //"dataobjects/<string:uuid>"
+            "dataobjects",
+            "dataobjects/<string:uuid>"
         ]
     }
 }
