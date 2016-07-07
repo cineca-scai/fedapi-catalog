@@ -30,8 +30,7 @@ class ProvidedUser(StructuredNode):
 
 class Location(StructuredNode):
     url = StringProperty(required=True, unique_index=True)
-    # created = DateTimeProperty()
-    created = StringProperty()
+    created = DateTimeProperty()
     locating = RelationshipFrom(
         'DataObject', 'IS_LOCATED_TO', cardinality=OneOrMore)
 

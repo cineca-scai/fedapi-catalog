@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
+
 from commons.logs import get_logger
 from commons.services.uuid import getUUID
 from ..base import ExtendedApiResource
@@ -26,7 +27,7 @@ class Catalog(ExtendedApiResource):
 
         graph = self.global_get_service('neo4j')
 
-        # Filter by uuid
+        # Filter by uuid
 
         # Filter by user?
 
@@ -91,18 +92,21 @@ class Catalog(ExtendedApiResource):
             return self.force_response(errors={uuid: 'could not be found'})
         logger.debug("Requested %s" % dobj)
 
-        # Match the user
+        # Match the user
         username = input_json.get(key)
         user = dobj.owned.all().pop()
         if user.username != username:
             return self.force_response(errors={key: 'not matching'})
 
-        # Pop out relationships
+        # Pop out relationships
 
         # Location
         key = 'locations'
         try:
             for location in input_json.pop(key):
+                # Fix timestamps
+                location['created'] = \
+                    self.timestamp_from_string(location['created'])
                 locobj = graph.Location.get_or_create(location).pop()
                 dobj.located.connect(locobj)
         except Exception as e:
@@ -114,8 +118,8 @@ class Catalog(ExtendedApiResource):
         for meta in input_json.pop(key):
             try:
                 for k, v in meta.items():
-                    metaobj = \
-                        graph.MetaData.get_or_create({'key':k, 'value':v}).pop()
+                    metaobj = graph.MetaData.get_or_create(
+                        {'key': k, 'value': v}).pop()
                     dobj.described.connect(metaobj)
             except Exception as e:
                 logger.critical("Failed with %s: %s" % (key, e))
@@ -133,7 +137,13 @@ class Catalog(ExtendedApiResource):
                 return self.force_response(errors={key: 'invalid'})
 
         # Update the graph
-        # people = Person.create_or_update({'name': 'Tim', 'age': 83})
+        input_json['created'] = \
+            self.timestamp_from_string(input_json['created'])
+        input_json['updated'] = \
+            self.timestamp_from_string(input_json['updated'])
+        input_json['id'] = uuid
+        graph.DataObject.create_or_update(input_json)
+        logger.debug("Updated obj %s" % dobj.id)
 
         # Return the UUID
         return uuid
