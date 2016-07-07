@@ -12,10 +12,13 @@ proxy:
   ports:
     - 80:80
 
-apitests:
-  links:
-    - proxy:apiserver
-
 graphdb:
   ports:
     - 9090:7474
+
+apitests:
+  links:
+    - proxy:apiserver
+  working_dir: /code
+  volumes:
+    - ./vanilla/clients:/code

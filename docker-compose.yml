@@ -16,7 +16,7 @@ graphdb:
     image: neo4j:2.3.3
     hostname: gdb
     environment:
-      NEO4J_AUTH: neo4j/eudatapi
+      NEO4J_AUTH: neo4j/catalogapi
       # Other parameters?
       #NEO4J_HEAP_MEMORY
       #NEO4J_CACHE_MEMORY

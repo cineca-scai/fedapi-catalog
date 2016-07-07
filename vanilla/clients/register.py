@@ -14,14 +14,15 @@ import logging
 ###################
 PROTOCOL = 'http'
 HOST = 'apiserver'
-PORT = 5000
+# PORT = 5000
+PORT = 80
 URL = "%s://%s:%s/api/" % (PROTOCOL, HOST, PORT)
 
 ###################
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler()
 formatter = logging.Formatter(
-        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+    '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.DEBUG)

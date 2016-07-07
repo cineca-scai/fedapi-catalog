@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "# ############################################ #"
-echo -e "\t\tEUDAT HTTP API development"
+echo -e "\t\tHTTP API development"
 echo "# ############################################ #"
 echo ""
 
@@ -161,21 +161,25 @@ if [ "$1" == "update" ]; then
     exit 0
 fi
 
-# Check if init has been executed
+## NEEDED FROM IRODS
+# not in this case
+## SHOULD THIS BE A PARAMETER?
 
-volumes=`$vcom ls | awk '{print $NF}' | grep "^$vprefix"`
-#echo -e "VOLUMES are\n*$volumes*"
-if [ "$volumes"  == "" ]; then
-    if [ "$1" != "init" ]; then
-        echo ""
-        echo "Docker volumes missing! Please *init* this project."
-        echo "To do so just run:"
-        echo ""
-        echo "\$ $0 init"
-        echo ""
-        exit 1
-    fi
-fi
+# # Check if init has been executed
+
+# volumes=`$vcom ls | awk '{print $NF}' | grep "^$vprefix"`
+# #echo -e "VOLUMES are\n*$volumes*"
+# if [ "$volumes"  == "" ]; then
+#     if [ "$1" != "init" ]; then
+#         echo ""
+#         echo "Docker volumes missing! Please *init* this project."
+#         echo "To do so just run:"
+#         echo ""
+#         echo "\$ $0 init"
+#         echo ""
+#         exit 1
+#     fi
+# fi
 
 ################################
 # EXECUTE OPTIONS
