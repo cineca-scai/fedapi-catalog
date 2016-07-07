@@ -25,7 +25,7 @@ from neomodel import \
 class ProvidedUser(StructuredNode):
     username = StringProperty(required=True, unique_index=True)
     owning = RelationshipFrom(
-        'DataObject', 'IS_OWNED_BY', cardinality=One)
+        'DataObject', 'IS_OWNED_BY', cardinality=OneOrMore)
 
 
 class Location(StructuredNode):
@@ -51,7 +51,7 @@ class Tag(StructuredNode):
 class DataObject(StructuredNode):
     id = StringProperty(required=True, unique_index=True)   # UUID
 
-    location = StringProperty(unique_index=True)
+    location = StringProperty(index=True)
     logicalName = StringProperty(index=True)
     path = StringProperty()
     description = StringProperty()

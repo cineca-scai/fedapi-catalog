@@ -26,6 +26,10 @@ class Catalog(ExtendedApiResource):
 
         graph = self.global_get_service('neo4j')
 
+        # Filter by uuid
+
+        # Filter by user?
+
         # ####################
         # # Test elastic
         # es = self.global_get_service('elasticsearch')
@@ -42,29 +46,39 @@ class Catalog(ExtendedApiResource):
         return hello
 
     # @auth.login_required
+    @decorate.add_endpoint_parameter("owner", required=True)
     @decorate.apimethod
     def post(self):
         """ Register a UUID """
 
-        # Create UUID
-        uuid = getUUID()
-
         # Create graph object
         graph = self.global_get_service('neo4j')
 
+        # Create user if not exists
+        username = self._args['owner']
+        user = graph.ProvidedUser.get_or_create({'username': username}).pop()
+
+        # Create and link UUID
+        dobj = graph.DataObject(id=getUUID())
+        dobj.save()
+        dobj.owned.connect(user)
+
         # Return the UUID
-        return uuid
+        return dobj.id
 
     # @auth.login_required
     @decorate.apimethod
     def put(self, uuid):
-        """ Update data with some """
+        """ Update metadata for a registerd object """
+
+        # Verify if the user matches!
 
         # Receive data
         input_json = self.get_input()
         print("INPUT", input_json)
 
         # Update the graph
+            # http://j.mp/29o1qk0
 
         # Return the UUID
         return input_json

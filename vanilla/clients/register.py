@@ -21,11 +21,12 @@ headers = {
 # opts = {'stream': True, 'headers': headers, 'timeout': 5}
 
 main_uri = URL + 'dataobjects'
+myuser = 'pdonorio'
 
 with open("input.json", encoding='utf-8') as f:
 
     # Ask id
-    r = requests.post(main_uri)
+    r = requests.post(main_uri, params={'owner': myuser})
     out = r.json()
     print("TEST", out)
 
