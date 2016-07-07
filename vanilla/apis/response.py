@@ -39,7 +39,6 @@ logger = get_logger(__name__)
 @decorate.custom_response
 def fedapp_response(defined_content=None,
                     code=None, headers={}, errors={}):
-
     """
     Define my response that will be used
     from any custom endpoint inside any file

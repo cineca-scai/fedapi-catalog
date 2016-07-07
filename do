@@ -1,5 +1,7 @@
 #!/bin/bash
 
+docker_volumes_prefix="fedapi"
+
 echo "# ############################################ #"
 echo -e "\t\tHTTP API development"
 echo "# ############################################ #"
@@ -45,9 +47,20 @@ restcontainer="rest"
 proxycontainer="proxy"
 clientcontainer="apitests"
 vcom="docker volume"
-vprefix="httpapitemplate_"
-
 compose_base="docker-compose -f docker-compose.yml"
+
+
+# Check the prefix
+if [ "$docker_volumes_prefix" == "httpapitemplate" ]; then
+    echo '$docker_volumes_prefix: "httpapitemplate"'
+    echo ""
+    echo "Please consider changing the main docker volume prefix"
+    echo "(Line 3 of the './do' file)"
+    echo ""
+    exit 1
+else
+    export VOLUMES_PREFIX="$docker_volumes_prefix"
+fi
 
 # Init mode
 if [ "$1" == "init" ]; then
@@ -161,19 +174,21 @@ if [ "$1" == "update" ]; then
     exit 0
 fi
 
-## NEEDED FROM IRODS
-# not in this case
-## SHOULD THIS BE A PARAMETER?
+#######################################
+
+## // TO FIX: make this parametric:
+# https://github.com/pdonorio/restapi-template/issues/1
 
 # # Check if init has been executed
 
-# volumes=`$vcom ls | awk '{print $NF}' | grep "^$vprefix"`
+# volumes=`$vcom ls | awk '{print $NF}' | grep "^${docker_volumes_prefix}_"`
+
 # #echo -e "VOLUMES are\n*$volumes*"
 # if [ "$volumes"  == "" ]; then
 #     if [ "$1" != "init" ]; then
 #         echo ""
-#         echo "Docker volumes missing! Please *init* this project."
-#         echo "To do so just run:"
+#         echo "Docker volumes are missing."
+#         echo "You must *init* this project:"
 #         echo ""
 #         echo "\$ $0 init"
 #         echo ""
@@ -208,7 +223,7 @@ if [ "$1" == "init" ]; then
     fi
     exit 0
 
-# EUDAT training
+# training
 elif [ "$1" == "training" ]; then
     container="training"
     $compose_run rm -f $container
@@ -246,14 +261,19 @@ elif [ "$1" == "clean" ]; then
     echo "REMOVE DATA"
     echo "are you really sure?"
     sleep 5
-    $compose_run stop
-    $compose_run rm -f
-    for volume in $volumes;
-    do
-        echo "Remove $volume volume"
-        $vcom rm $volume
-        sleep 1
-    done
+
+    # From docker-compose man:
+    # > "down": Stop and remove containers, networks, images, and volumes
+    $compose_run down
+
+    # $compose_run stop
+    # $compose_run rm -f
+    # for volume in $volumes;
+    # do
+    #     echo "Remove $volume volume"
+    #     $vcom rm $volume
+    #     sleep 1
+    # done
     exit 0
 
 elif [ "$1" == "addiuser" ]; then
@@ -301,6 +321,18 @@ then
         $compose_run stop
         $compose_run rm -f
     fi
+
+    case $2 in
+        ''|*[!0-9]*) ;;
+        *)
+            service="worker"
+            echo "Setting $2 $service(s)"
+            # Make sure we bring up the containers and all of its links
+            $compose_run up -d $service
+            # Scale to the number of requested workers
+            $compose_run scale $service=$2
+            ;;
+    esac
 
     # Check certificates
     if [ "$1" == "PRODUCTION" ]; then

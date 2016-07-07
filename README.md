@@ -28,10 +28,11 @@ Docker stack: booting
 Stack processes:
 [...]
 
-# Check if the server is reachable
+# Open a client container
 $ ./do client_shell
 
-/code # http apiserver/api/status
+# Check if the server is reachable
+/code $ http apiserver/api/status
 HTTP/1.1 200 OK
 Access-Control-Allow-Origin: *
 Connection: keep-alive
@@ -43,8 +44,7 @@ Server: nginx/1.11.1
 "Server is alive!"
 
 # Run the client to create data inside the GraphDB
-
-/code # python3 register.py
+/code $ python3 register.py
 2016-07-07 08:09:05,608 __main__     INFO     POST: received id 'aa90135e-7242-4790-a389-1500b67074a9'
 2016-07-07 08:09:06,506 __main__     INFO     PUT: updated. Out = aa90135e-7242-4790-a389-1500b67074a9
 2016-07-07 08:09:06,525 __main__     INFO     GET: Hello world

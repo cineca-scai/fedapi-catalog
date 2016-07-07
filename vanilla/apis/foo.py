@@ -5,17 +5,19 @@ An endpoint example
 """
 
 from __future__ import absolute_import
+
 from commons.logs import get_logger
 from ..base import ExtendedApiResource
 from .. import decorators as decorate
-
-# AUTH
-from ...auth import auth
+# # AUTH
+# from ...auth import auth
 
 logger = get_logger(__name__)
 
 
-#####################################
+####################
+# Define endpoints
+
 class SomeRestEndpoint(ExtendedApiResource):
 
     _index_name = 'justatest'
@@ -28,10 +30,21 @@ class SomeRestEndpoint(ExtendedApiResource):
         logger.info(hello)
 
         # ####################
+        # # Test celery asynchronous tasks
+
+        # from commons.tasks.base.examples import foo, foo_in_context
+        # foo.delay()
+        # foo_in_context.delay("Hello")
+
+        # from commons.tasks.custom.mytasks import test_task
+        # test_task.delay("It works!")
+
+        # ####################
         # # Test graph
         # graph = self.global_get_service('neo4j')
         # queryout = graph.cypher("MATCH (n) RETURN (n)")
         # print(queryout)
+        # # Note: for neomodel examples check the file `training/custom.py`
 
         # ####################
         # # Test elastic
@@ -45,4 +58,5 @@ class SomeRestEndpoint(ExtendedApiResource):
         # return self.force_response(errors="failed")
         # return {'errors': 'test', 'defined_content': None}
         # return self.response(hello)
+
         return hello
