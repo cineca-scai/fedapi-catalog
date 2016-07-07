@@ -71,14 +71,69 @@ class Catalog(ExtendedApiResource):
     def put(self, uuid):
         """ Update metadata for a registerd object """
 
-        # Verify if the user matches!
-
         # Receive data
         input_json = self.get_input()
-        print("INPUT", input_json)
+
+        # Verify if the user is available
+        key = 'owner'
+        if key not in input_json:
+            return self.force_response(errors={key: 'missing JSON parameter'})
+
+        # Connect the graph
+        graph = self.global_get_service('neo4j')
+        dobj = None
+        user = None
+
+        # Recover the node
+        try:
+            dobj = graph.DataObject.nodes.get(id=uuid)
+        except graph.ProvidedUser.DoesNotExist:
+            return self.force_response(errors={uuid: 'could not be found'})
+        logger.debug("Requested %s" % dobj)
+
+        # Match the user
+        username = input_json.get(key)
+        user = dobj.owned.all().pop()
+        if user.username != username:
+            return self.force_response(errors={key: 'not matching'})
+
+        # Pop out relationships
+
+        # Location
+        key = 'locations'
+        try:
+            for location in input_json.pop(key):
+                locobj = graph.Location.get_or_create(location).pop()
+                dobj.located.connect(locobj)
+        except Exception as e:
+            logger.critical("Failed with %s: %s" % (key, e))
+            return self.force_response(errors={key: 'invalid'})
+
+        # Metadata
+        key = 'metadata'
+        for meta in input_json.pop(key):
+            try:
+                for k, v in meta.items():
+                    metaobj = \
+                        graph.MetaData.get_or_create({'key':k, 'value':v}).pop()
+                    dobj.described.connect(metaobj)
+            except Exception as e:
+                logger.critical("Failed with %s: %s" % (key, e))
+                return self.force_response(errors={key: 'invalid'})
+
+        # Tags
+        key = 'tags'
+        for tag in input_json.pop(key):
+            try:
+                tagobj = \
+                    graph.Tag.get_or_create({'name': tag}).pop()
+                dobj.tagged.connect(tagobj)
+            except Exception as e:
+                logger.critical("Failed with %s: %s" % (key, e))
+                return self.force_response(errors={key: 'invalid'})
 
         # Update the graph
-            # http://j.mp/29o1qk0
+        # people = Person.create_or_update({'name': 'Tim', 'age': 83})
 
         # Return the UUID
-        return input_json
+        return uuid

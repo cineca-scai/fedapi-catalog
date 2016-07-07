@@ -25,12 +25,13 @@ from neomodel import \
 class ProvidedUser(StructuredNode):
     username = StringProperty(required=True, unique_index=True)
     owning = RelationshipFrom(
-        'DataObject', 'IS_OWNED_BY', cardinality=OneOrMore)
+        'DataObject', 'IS_OWNED_BY', cardinality=One)
 
 
 class Location(StructuredNode):
     url = StringProperty(required=True, unique_index=True)
-    created = DateTimeProperty()
+    # created = DateTimeProperty()
+    created = StringProperty()
     locating = RelationshipFrom(
         'DataObject', 'IS_LOCATED_TO', cardinality=OneOrMore)
 

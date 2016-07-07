@@ -6,14 +6,27 @@ Example of Python code for using the API as a client
 
 # from __future__ import absolute_import
 
-import requests
+###################
 import json
+import requests
+import logging
 
+###################
 PROTOCOL = 'http'
 HOST = 'apiserver'
 PORT = 5000
 URL = "%s://%s:%s/api/" % (PROTOCOL, HOST, PORT)
 
+###################
+logger = logging.getLogger(__name__)
+handler = logging.StreamHandler()
+formatter = logging.Formatter(
+        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.DEBUG)
+
+###################
 headers = {
     'content-type': 'application/json',
     # 'Authentication-Token': g.user.token
@@ -23,21 +36,20 @@ headers = {
 main_uri = URL + 'dataobjects'
 myuser = 'pdonorio'
 
+###################
 with open("input.json", encoding='utf-8') as f:
 
-    # Ask id
+    # Ask id: POST
     r = requests.post(main_uri, params={'owner': myuser})
-    out = r.json()
-    print("TEST", out)
+    id = r.json()
+    logger.info("POST: received id '%s'" % id)
 
-    # Update metadata
+    # Update metadata: PUT
     data = json.load(f)
-    # add uuid to json data
-    # r = requests.put(main_uri, data=json.dumps(data))
-    # out = r.json()
-    # print("TEST", out)
+    r = requests.put(main_uri + '/' + id, data=json.dumps(data))
+    logger.info("PUT: updated. Out = %s" % r.json())
 
-# # Get results
-# r = requests.get(main_uri)
-# out = r.json()
-# print("TEST", out)
+###################
+# Get results: GET
+r = requests.get(main_uri)
+logger.info("GET: %s" % r.json())
