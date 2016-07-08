@@ -35,6 +35,8 @@ logger = get_logger(__name__)
 
 ############################################################
 
+SERVER_ERROR = {'message': 'Internal Server Error'}
+
 
 @decorate.custom_response
 def fedapp_response(*args, defined_content=None,
@@ -49,6 +51,9 @@ def fedapp_response(*args, defined_content=None,
     elif not isinstance(defined_content, dict):
         tmp = defined_content
         defined_content = {'response': tmp}
+    elif defined_content == SERVER_ERROR:
+        errors = defined_content
+        defined_content = None
 
     if len(args) > 0:
         defined_content['content'] = args

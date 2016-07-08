@@ -7,6 +7,7 @@ Example of Python code for using the API as a client
 # from __future__ import absolute_import
 
 ###################
+import os
 import json
 import requests
 import logging
@@ -14,8 +15,8 @@ import logging
 ###################
 PROTOCOL = 'http'
 HOST = 'apiserver'
-# PORT = 5000
-PORT = 80
+# Default is 80
+PORT = os.environ.get('APISERVER_PORT', 80).split(':')[::-1][0]
 URL = "%s://%s:%s/api/" % (PROTOCOL, HOST, PORT)
 
 ###################
@@ -26,6 +27,18 @@ formatter = logging.Formatter(
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.DEBUG)
+
+
+###################
+def check_api_output(req):
+    out = req.json()
+    if req.status_code > 299:
+        raise BaseException("API request NOT completed:\n%s" % out)
+    elif 'response' in out:
+        return out['response']
+
+    return out
+
 
 ###################
 headers = {
@@ -42,15 +55,17 @@ with open("input.json", encoding='utf-8') as f:
 
     # Ask id: POST
     r = requests.post(main_uri, params={'owner': myuser})
-    id = r.json()
-    logger.info("POST: received id '%s'" % id)
+    id = check_api_output(r)
+    logger.info("POST: received ID %s" % id)
 
     # Update metadata: PUT
     data = json.load(f)
     r = requests.put(main_uri + '/' + id, data=json.dumps(data))
-    logger.info("PUT: updated. Out = %s" % r.json())
+    out = check_api_output(r)
+    logger.info("PUT: updated: %s" % out)
 
 ###################
 # Get results: GET
 r = requests.get(main_uri)
-logger.info("GET: %s" % r.json())
+out = check_api_output(r)
+logger.info("GET: %s" % out)
