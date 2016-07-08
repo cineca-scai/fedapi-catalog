@@ -37,17 +37,27 @@ logger = get_logger(__name__)
 
 
 @decorate.custom_response
-def fedapp_response(defined_content=None,
-                    code=None, headers={}, errors={}):
+def fedapp_response(*args, defined_content=None,
+                    code=None, headers={}, errors={}, **kwargs):
     """
     Define my response that will be used
     from any custom endpoint inside any file
     """
 
+    if defined_content is None:
+        defined_content = {}
+    elif not isinstance(defined_content, dict):
+        tmp = defined_content
+        defined_content = {'response': tmp}
+
+    if len(args) > 0:
+        defined_content['content'] = args
+
+    for key, value in kwargs.items():
+        defined_content[key] = value
+
     if len(errors) > 0:
         defined_content = {'errors': errors}
-    else:
-        pass
 
     return ExtendedApiResource.flask_response(
         defined_content, status=code, headers=headers)
