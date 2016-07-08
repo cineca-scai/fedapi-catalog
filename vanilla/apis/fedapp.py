@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import
 
+import os
 from commons.logs import get_logger
 from commons.services.uuid import getUUID
 from ..base import ExtendedApiResource
@@ -16,8 +17,6 @@ logger = get_logger(__name__)
 #####################################
 class Catalog(ExtendedApiResource):
 
-    _index_name = 'fedapp'
-
     # @auth.login_required
     @decorate.apimethod
     def get(self, uuid=None):
@@ -26,25 +25,29 @@ class Catalog(ExtendedApiResource):
         logger.info(hello)
 
         graph = self.global_get_service('neo4j')
+        dobjs = []
 
         # Filter by uuid
+        if uuid is not None:
+            # Recover the node
+            try:
+                dobjs.append(graph.DataObject.nodes.get(id=uuid))
+            except graph.ProvidedUser.DoesNotExist:
+                return self.force_response(errors={uuid: 'could not be found'})
+            logger.debug("Requested %s" % uuid)
+        else:
+            dobjs = graph.DataObject.nodes.all()
 
-        # Filter by user?
+            ## Filter by user?
+            pass
 
-        # ####################
-        # # Test elastic
-        # es = self.global_get_service('elasticsearch')
-        # print(es)
-        # es.index_up(self._index_name)
+        data = []
+        # Build response
+        for dobj in dobjs:
+            # print(dobj, dir(dobj))
+            data.append(self.getJsonResponse(dobj, skip_missing_ids=True))
 
-        # ####################
-        # # Testing returns
-        # return self.report_generic_error()
-        # return self.force_response(errors="failed")
-        # return {'errors': 'test', 'defined_content': None}
-        # return self.response(hello)
-
-        return hello
+        return data
 
     # @auth.login_required
     @decorate.add_endpoint_parameter("owner", required=True)
@@ -52,7 +55,7 @@ class Catalog(ExtendedApiResource):
     def post(self):
         """ Register a UUID """
 
-        # Create graph object
+        # Create graph object
         graph = self.global_get_service('neo4j')
 
         # Create user if not exists
@@ -142,8 +145,30 @@ class Catalog(ExtendedApiResource):
         input_json['updated'] = \
             self.timestamp_from_string(input_json['updated'])
         input_json['id'] = uuid
+
+        key = 'logicalName'
+        if key not in input_json:
+            input_json[key] = os.path.basename(input_json['path'])
+
         graph.DataObject.create_or_update(input_json)
         logger.debug("Updated obj %s" % dobj.id)
 
         # Return the UUID
         return uuid
+
+
+class ElasticSearch(ExtendedApiResource):
+
+    _index_name = 'fedapp'
+
+    # @auth.login_required
+    @decorate.apimethod
+    def get(self):
+
+        # ####################
+        # # Test elastic
+        # es = self.global_get_service('elasticsearch')
+        # print(es)
+        # es.index_up(self._index_name)
+
+        return "Hello"
