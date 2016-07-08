@@ -3,8 +3,12 @@
 
 Testing REST API development to fill caches of a catalog.
 
+### Data model
 
-### Pre-requisites
+* The neomodels mapping of our data into a graph db can be found [here](vanilla/models/neo4j.py).
+* The implementation of current endpoints is available at [this python class](vanilla/apis/fedapp.py)
+
+### Pre-requisites for execution
 
 Before starting please make sure that you have installed on your system:
 
@@ -12,7 +16,7 @@ Before starting please make sure that you have installed on your system:
 * [docker-compose](https://docs.docker.com/compose/) 1.7+
 
 
-### Check the project
+### Run the project
 
 Clone the repository.
 Then, from a terminal at the very root of the repo:
