@@ -163,12 +163,20 @@ class ElasticSearch(ExtendedApiResource):
 
     # @auth.login_required
     @decorate.apimethod
-    def get(self):
+    def get(self, keyword=None):
 
-        # ####################
-        # # Test elastic
-        # es = self.global_get_service('elasticsearch')
+        ####################
+        # Test elastic
+        es = self.global_get_service('elasticsearch')
         # print(es)
+        print(es.GenericDocument)
         # es.index_up(self._index_name)
 
         return "Hello"
+
+    # @auth.login_required
+    @decorate.apimethod
+    def post(self):
+
+        j = self.get_input()
+        return j

@@ -7,10 +7,9 @@ rest:
   links:
     # Graphdb must be called gdb
     - graphdb:gdb
-    # # Elasticsearch must be called el
-    # - searchindex:el
-    # # Redis db (as a queue) should be called queue
-    # - redqueue:queue
+#     # Elasticsearch must be called el
+# ## KIBANA?
+    - searchindex:el
 
 # worker:
 #   # command: sleep infinity

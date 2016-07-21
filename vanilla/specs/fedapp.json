@@ -6,6 +6,10 @@
         "Catalog": [
             "dataobjects",
             "dataobjects/<string:uuid>"
+        ],
+        "ElasticSearch": [
+            "search",
+            "search/<string:keyword>"
         ]
     }
 }

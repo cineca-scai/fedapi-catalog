@@ -69,3 +69,21 @@ with open("input.json", encoding='utf-8') as f:
 r = requests.get(main_uri)
 out = check_api_output(r)
 logger.info("GET: %s" % out)
+
+#####################################
+
+main_uri = URL + 'search'
+
+###################
+# Search with no parameter: GET
+r = requests.get(main_uri)
+out = check_api_output(r)
+logger.info("SEARCH: %s" % out)
+
+###################
+# Search with parameter: POST
+keyword = 'papa'
+r = requests.post(main_uri, data={'keyword': keyword})
+out = check_api_output(r)
+print("TEST", out)
+# logger.info("SEARCH POST (keyword '%s'): %s" % (keyword, out))
