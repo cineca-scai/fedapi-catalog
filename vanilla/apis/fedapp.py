@@ -159,20 +159,61 @@ class Catalog(ExtendedApiResource):
 
 class ElasticSearch(ExtendedApiResource):
 
-    _index_name = 'fedapp'
-
     # @auth.login_required
     @decorate.apimethod
     def get(self, keyword=None):
 
         ####################
-        # Test elastic
-        es = self.global_get_service('elasticsearch')
-        # print(es)
-        print(es.GenericDocument)
-        # es.index_up(self._index_name)
+        # Test elasticsearch
 
-        return "Hello"
+        es = self.global_get_service('elasticsearch')
+        print(es._connection)
+
+        #############
+        # # Insert
+        # print(es.GenericDocument, es._connection)
+        # obj = es.GenericDocument(title="Paolo", type="Donorio")
+        # obj.save()
+        # obj = es.GenericDocument(title="Mattia", type="Danton")
+        # obj.save()
+        # obj = es.GenericDocument(title="Matteo", type="Palloc")
+        # obj.save()
+
+        #############
+        # # Wait if you want to have all recent data
+        # import time
+        # time.sleep(2)
+
+        #############
+        # # Normal Search
+        # for hit in obj.search().execute():
+        #     print("Hit", hit)
+
+        #############
+        # # Match on multiple fields
+        # m = MultiMatch(fields=["title", "title_suggest"], query="donorio")
+        # i.search().query(m).execute()
+
+        #############
+        # Suggestion(s)
+
+        output = []
+        suggest = None
+        try:
+            suggest = es.GenericDocument.search() \
+                .suggest('data', keyword, completion={'field': 'title'}) \
+                .execute_suggest()
+        except Exception as e:
+            logger.warning("Suggestion error:\n%s" % e)
+        finally:
+            if suggest is None or 'data' not in suggest:
+                return output
+
+        results = suggest.data.pop()
+        for result in results['options']:
+            output.append(result)
+
+        return output
 
     # @auth.login_required
     @decorate.apimethod

@@ -6,8 +6,14 @@
 # from ..logs import get_logger
 
 from elasticsearch_dsl import DocType, String, Completion
-# Date, Nested, Boolean, \
-# analyzer, InnerObjectWrapper,
+from elasticsearch_dsl import analyzer, tokenizer
+
+
+# my_analyzer = analyzer(
+#     'my_analyzer',
+#     tokenizer=tokenizer('trigram', 'nGram', min_gram=2, max_gram=3),
+#     filter=['lowercase']
+# )
 
 # logger = get_logger(__name__)
 # logger.info("Things to do")
@@ -15,8 +21,9 @@ from elasticsearch_dsl import DocType, String, Completion
 
 class GenericDocument(DocType):
 
-    title = String()
-    title_suggest = Completion(payloads=True)
+    title = Completion(payloads=True)
+    # title = String(analyzer=my_analyzer)
+    type = String()
 
     class Meta:
         index = 'myindex'
