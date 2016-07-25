@@ -18,6 +18,10 @@ rest:
 #     # between worker and rest
 #     - redqueue:queue
 
+searchindex:
+  ports:
+    - 9200:9200
+
 graphdb:
   ports:
     - 9090:7474

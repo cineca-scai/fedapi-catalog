@@ -34,11 +34,11 @@ class Training(metaclass=abc.ABCMeta):
 
         # iRODS/B2SAFE instance
         obj = internal_services.get('irods')
-        self._irods = obj().get_instance(user='guest')
+        self._irods = obj.get_instance(user='guest')
 
         # GraphDB/neo4j instance
         obj = internal_services.get('neo4j')
-        self._graph = obj().get_instance(use_models=False)
+        self._graph = obj.get_instance(use_models=False)
 
         # GraphDB training models
         module = self._meta.get_module_from_string('training.models')
