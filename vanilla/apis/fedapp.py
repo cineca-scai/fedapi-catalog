@@ -57,10 +57,16 @@ class Catalog(ExtendedApiResource):
 
         # Create graph object
         graph = self.global_get_service('neo4j')
+        es = self.global_get_service('elasticsearch')
 
         # Create user if not exists
         username = self._args['owner']
         user = graph.ProvidedUser.get_or_create({'username': username}).pop()
+
+        # Add user to elastic search suggestions
+        es.get_or_create_suggestion(
+            es.GenericSuggestion,
+            text=username, payload={'type': 'user'})
 
         # Create and link UUID
         dobj = graph.DataObject(id=getUUID())
@@ -85,6 +91,7 @@ class Catalog(ExtendedApiResource):
 
         # Connect the graph
         graph = self.global_get_service('neo4j')
+        es = self.global_get_service('elasticsearch')
         dobj = None
         user = None
 
@@ -107,11 +114,18 @@ class Catalog(ExtendedApiResource):
         key = 'locations'
         try:
             for location in input_json.pop(key):
+
                 # Fix timestamps
                 location['created'] = \
                     self.timestamp_from_string(location['created'])
                 locobj = graph.Location.get_or_create(location).pop()
                 dobj.located.connect(locobj)
+
+                # Add to elastic search suggestions
+                es.get_or_create_suggestion(
+                    es.GenericSuggestion,
+                    text=location['url'], payload={'type': key})
+
         except Exception as e:
             logger.critical("Failed with %s: %s" % (key, e))
             return self.force_response(errors={key: 'invalid'})
@@ -124,6 +138,12 @@ class Catalog(ExtendedApiResource):
                     metaobj = graph.MetaData.get_or_create(
                         {'key': k, 'value': v}).pop()
                     dobj.described.connect(metaobj)
+
+                    # Add to elastic search suggestions
+                    es.get_or_create_suggestion(
+                        es.GenericSuggestion,
+                        text=v, payload={'type': '[%s] %s' % (key, k)})
+
             except Exception as e:
                 logger.critical("Failed with %s: %s" % (key, e))
                 return self.force_response(errors={key: 'invalid'})
@@ -135,6 +155,11 @@ class Catalog(ExtendedApiResource):
                 tagobj = \
                     graph.Tag.get_or_create({'name': tag}).pop()
                 dobj.tagged.connect(tagobj)
+
+                # Add to elastic search suggestions
+                es.get_or_create_suggestion(
+                    es.GenericSuggestion,
+                    text=tag, payload={'type': key})
             except Exception as e:
                 logger.critical("Failed with %s: %s" % (key, e))
                 return self.force_response(errors={key: 'invalid'})
@@ -150,6 +175,10 @@ class Catalog(ExtendedApiResource):
         if key not in input_json:
             input_json[key] = os.path.basename(input_json['path'])
 
+        # Add to elastic search suggestions
+        es.get_or_create_suggestion(
+            es.GenericSuggestion, text=input_json[key], payload={'type': key})
+
         graph.DataObject.create_or_update(input_json)
         logger.debug("Updated obj %s" % dobj.id)
 
@@ -164,8 +193,6 @@ class ElasticSearch(ExtendedApiResource):
     def get(self, keyword=None):
 
         ####################
-        # Test elasticsearch
-
         es = self.global_get_service('elasticsearch')
         print(es._connection)
 
@@ -185,8 +212,8 @@ class ElasticSearch(ExtendedApiResource):
         # time.sleep(2)
 
         #############
-        # # Normal Search
-        # for hit in obj.search().execute():
+        # Normal Search
+        # for hit in es.GenericDocument.search().execute():
         #     print("Hit", hit)
 
         #############
@@ -194,26 +221,7 @@ class ElasticSearch(ExtendedApiResource):
         # m = MultiMatch(fields=["title", "title_suggest"], query="donorio")
         # i.search().query(m).execute()
 
-        #############
-        # Suggestion(s)
-
-        output = []
-        suggest = None
-        try:
-            suggest = es.GenericDocument.search() \
-                .suggest('data', keyword, completion={'field': 'title'}) \
-                .execute_suggest()
-        except Exception as e:
-            logger.warning("Suggestion error:\n%s" % e)
-        finally:
-            if suggest is None or 'data' not in suggest:
-                return output
-
-        results = suggest.data.pop()
-        for result in results['options']:
-            output.append(result)
-
-        return output
+        return 'Hello'
 
     # @auth.login_required
     @decorate.apimethod
@@ -221,3 +229,27 @@ class ElasticSearch(ExtendedApiResource):
 
         j = self.get_input()
         return j
+
+
+class ElasticSuggest(ExtendedApiResource):
+
+    # @auth.login_required
+    @decorate.apimethod
+    def get(self, keyword=None):
+
+        if keyword is None:
+            return self.force_response(errors={'suggest': 'empty query'})
+
+        es = self.global_get_service('elasticsearch')
+
+        def manipulate(single):
+            """ Manipulate the elasticsearch-dsl output """
+            tmp = {}
+            if 'payload' in single:
+                for element in single.payload:
+                    tmp[element] = getattr(single.payload, element)
+            tmp['suggested'] = single.text
+            return tmp
+
+        return es.search_suggestion(
+            es.GenericSuggestion, keyword, manipulate_output=manipulate)

@@ -7,6 +7,10 @@
             "dataobjects",
             "dataobjects/<string:uuid>"
         ],
+        "ElasticSuggest": [
+            "suggest",
+            "suggest/<string:keyword>"
+        ],
         "ElasticSearch": [
             "search",
             "search/<string:keyword>"

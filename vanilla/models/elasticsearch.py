@@ -6,8 +6,8 @@
 # from ..logs import get_logger
 
 from elasticsearch_dsl import DocType, String, Completion
-from elasticsearch_dsl import analyzer, tokenizer
 
+# from elasticsearch_dsl import analyzer, tokenizer
 
 # my_analyzer = analyzer(
 #     'my_analyzer',
@@ -15,15 +15,25 @@ from elasticsearch_dsl import analyzer, tokenizer
 #     filter=['lowercase']
 # )
 
+
 # logger = get_logger(__name__)
 # logger.info("Things to do")
 
 
 class GenericDocument(DocType):
 
-    title = Completion(payloads=True)
-    # title = String(analyzer=my_analyzer)
-    type = String()
+    key = String()
+    value = String()
 
     class Meta:
-        index = 'myindex'
+        index = 'generic'
+
+
+class GenericSuggestion(DocType):
+
+    suggestme = Completion(payloads=True)
+    # value = Completion(payloads=True)
+    # type = String()
+
+    class Meta:
+        index = 'suggestion'
