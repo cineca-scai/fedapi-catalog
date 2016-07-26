@@ -43,7 +43,7 @@ class MetaData(StructuredNode):
     # value = StringProperty(required=True)
     describing = RelationshipFrom(
         'DataObject', 'DESCRIBED_BY', cardinality=ZeroOrMore)
-    _fields_to_show = ['key', 'value']
+    _fields_to_show = ['data']
 
 
 class Tag(StructuredNode):

@@ -22,9 +22,6 @@ class Catalog(ExtendedApiResource):
     @decorate.apimethod
     def get(self, uuid=None):
 
-        hello = "Hello world"
-        logger.info(hello)
-
         graph = self.global_get_service('neo4j')
         dobjs = []
 
@@ -144,7 +141,6 @@ class Catalog(ExtendedApiResource):
                 for k, v in meta.items():
                     metaobj = graph.MetaData.get_or_create(
                         {'data': {'key': k, 'value': v}}).pop()
-                        # {'unique': k + v, 'key': k, 'value': v}).pop()
                     dobj.described.connect(metaobj)
                     elastic_data[key].append(v)
 
@@ -209,9 +205,13 @@ class Catalog(ExtendedApiResource):
                 text=input_json[key], payload={'type': key})
 
         ################
+        # SAVE IT
+
         # Save the main object to graph
         graph.DataObject.create_or_update(input_json)
+
         # Save the main object to elasticsearch
+        elastic_data['id'] = dobj.id
         es.get_or_create(es.FedappCatalog, elastic_data, forced_id=dobj.id)
         # Note: we are using the same ID inside the graph and elasticsearch
 
