@@ -10,7 +10,7 @@ Imports and models have to be defined/used AFTER normal Graphdb connection.
 
 from __future__ import absolute_import
 from neomodel import \
-    DateTimeProperty, StringProperty, IntegerProperty, \
+    DateTimeProperty, StringProperty, IntegerProperty, JSONProperty, \
     StructuredNode, RelationshipTo, RelationshipFrom, \
     One, OneOrMore, ZeroOrMore
 
@@ -38,8 +38,9 @@ class Location(StructuredNode):
 
 
 class MetaData(StructuredNode):
-    key = StringProperty(required=True, unique_index=True)
-    value = StringProperty()
+    data = JSONProperty(required=True, unique=True)
+    # key = StringProperty(required=True)
+    # value = StringProperty(required=True)
     describing = RelationshipFrom(
         'DataObject', 'DESCRIBED_BY', cardinality=ZeroOrMore)
     _fields_to_show = ['key', 'value']

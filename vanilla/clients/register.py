@@ -55,7 +55,7 @@ myuser = 'pdonorio'
 
 #######################
 # Clear all data...
-r = requests.get(URL + 'cleaner')
+r = requests.get(URL + 'cleaner/all')
 logger.debug("Cleaned all data")
 
 #######################
@@ -70,7 +70,12 @@ for filename in glob.glob(os.path.join(INPUT_DIR, "*") + ".json"):
         logger.info("POST: received ID %s" % id)
 
         # Update metadata: PUT
-        data = json.load(f)
+        try:
+            data = json.load(f)
+        except Exception as e:
+            logger.error("Failed to read input '%s':\n%s" % (filename, e))
+            exit(1)
+
         r = requests.put(main_uri + '/' + id, data=json.dumps(data))
         out = check_api_output(r)
         logger.info("PUT: updated: %s" % out)

@@ -1,0 +1,27 @@
+{
+    "path": "/root/important.zip",
+    "checksum": "thisisjust4fakechecksum12345",
+    "created": "123456789.012",
+    "updated": "123456789.013",
+    "description": "General description of the digital entity",
+    "format": "compressed",
+    "owner": "pdonorio",
+    "locations": [
+        {
+            "created": "1468479951.56506",
+            "url": "http://www.test.com/yes"
+        }
+    ],
+    "metadata": [
+        {
+            "one element": "a boolean",
+            "second element": "is true",
+            "third element": "false"
+        }
+    ],
+    "tags": [
+        "nice",
+        "cool"
+    ],
+    "size": "1048"
+}

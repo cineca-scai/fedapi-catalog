@@ -143,7 +143,8 @@ class Catalog(ExtendedApiResource):
             try:
                 for k, v in meta.items():
                     metaobj = graph.MetaData.get_or_create(
-                        {'key': k, 'value': v}).pop()
+                        {'data': {'key': k, 'value': v}}).pop()
+                        # {'unique': k + v, 'key': k, 'value': v}).pop()
                     dobj.described.connect(metaobj)
                     elastic_data[key].append(v)
 
@@ -376,5 +377,8 @@ class Cleaner(ExtendedApiResource):
 
         logger.debug("Clean graph")
         self.global_get_service('neo4j').clean_all()
+
+        # Force a new elastic object: to re-build removed indexes
+        self.global_get_service('elasticsearch', force=True)
 
         return True
