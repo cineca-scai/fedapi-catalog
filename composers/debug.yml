@@ -32,3 +32,4 @@ apitests:
   working_dir: /code
   volumes:
     - ./vanilla/clients:/code
+    - ./vanilla/input:/tmp/input
