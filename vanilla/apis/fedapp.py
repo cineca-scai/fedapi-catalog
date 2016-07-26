@@ -357,3 +357,24 @@ class ElasticSuggest(ExtendedApiResource):
 
         return es.search_suggestion(
             es.GenericSuggestion, keyword, manipulate_output=manipulate)
+
+
+class Cleaner(ExtendedApiResource):
+
+    # @auth.login_required
+    @decorate.apimethod
+    def get(self, key):
+
+        if key != 'all':
+            return False
+
+        #######################
+        # Clear all data...
+
+        logger.debug("Clean elastic")
+        self.global_get_service('elasticsearch').clean_all()
+
+        logger.debug("Clean graph")
+        self.global_get_service('neo4j').clean_all()
+
+        return True

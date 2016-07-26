@@ -12,6 +12,7 @@ import json
 import glob
 import requests
 import logging
+# from restapi.resources.services.detect import services
 
 ###################
 PROTOCOL = 'http'
@@ -52,9 +53,13 @@ headers = {
 main_uri = URL + 'dataobjects'
 myuser = 'pdonorio'
 
-## // TO FIX:
-    # clear all data...
+#######################
+# Clear all data...
+r = requests.get(URL + 'cleaner')
+logger.debug("Cleaned all data")
 
+#######################
+# Load input(s)
 for filename in glob.glob(os.path.join(INPUT_DIR, "*") + ".json"):
 
     with open(filename, encoding='utf-8') as f:
