@@ -82,7 +82,7 @@ $ ./do client_shell
 ```
 
 
-### Insert some data
+### Insert some data for testing purpose
 
 The client container has a script to populate the catalog
 with all the `JSON` files found inside [the vanilla directory](vanilla/input):
@@ -90,10 +90,18 @@ with all the `JSON` files found inside [the vanilla directory](vanilla/input):
 ```bash
 
 # Run the python client to create data inside the GraphDB
-/code $ python3 register.py
-2016-07-07 08:09:05,608 __main__     INFO     POST: received id 'aa90135e-7242-4790-a389-1500b67074a9'
-2016-07-07 08:09:06,506 __main__     INFO     PUT: updated. Out = aa90135e-7242-4790-a389-1500b67074a9
-2016-07-07 08:09:06,525 __main__     INFO     GET: Hello world
+
+/code # python3 register.py
+
+INFO     Cleaned all previous data
+DEBUG    Loading from directory '/tmp/input'
+INFO     POST: received ID 73d878d6-fbf6-4db4-97ad-d8b4a87badb3
+INFO     PUT: updated: 73d878d6-fbf6-4db4-97ad-d8b4a87badb3
+INFO     POST: received ID 406e41a9-da38-4ac4-a5c4-f19ddd626910
+INFO     PUT: updated: 406e41a9-da38-4ac4-a5c4-f19ddd626910
+INFO     POST: received ID 64120f44-6e4c-4871-862f-a6a501074547
+INFO     PUT: updated: 64120f44-6e4c-4871-862f-a6a501074547
+INFO     Completed data registration
 ```
 
 
@@ -156,8 +164,8 @@ http POST apiserver/api/search _all=42
 
 * Search a term in a specific field:
 ```
-http POST apiserver:5000/api/search tags=nice
-http POST apiserver:5000/api/search format=pdf
+http POST apiserver/api/search tags=nice
+http POST apiserver/api/search format=pdf
 ```
 
 Note: suggestion + search (both based on `elasticsearch`) are the usual component used as backend for a Javascript web page that implements a Google-like search bar (e.g. with `AJAX` http calls to the API server).
