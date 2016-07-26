@@ -5,6 +5,7 @@ from __future__ import absolute_import
 import os
 from commons.logs import get_logger
 from commons.services.uuid import getUUID
+from elasticsearch_dsl.query import MultiMatch
 from ..base import ExtendedApiResource
 from .. import decorators as decorate
 
@@ -38,7 +39,8 @@ class Catalog(ExtendedApiResource):
         else:
             dobjs = graph.DataObject.nodes.all()
 
-            ## Filter by user?
+# // TO DISCUSS:
+## Should we allow a filter by user?
             pass
 
         data = []
@@ -238,14 +240,11 @@ class Catalog(ExtendedApiResource):
             return self.force_response(errors={uuid: 'could not be found'})
         logger.debug("Requested %s" % dobj)
 
-        print("TEST 1", dobj.logicalName)
-
         # Delete elasticsearch suggested name
         try:
             out = es.GenericSuggestion.search() \
                 .query('match', suggestme=dobj.logicalName).execute()
             for element in out.to_dict()['hits']['hits']:
-                print("TEST 2", element['_id'])
                 es.GenericSuggestion.get(element['_id']).delete()
         except Exception as e:
             logger.info("Failed to remove elastic suggestion\n%s" % e)
@@ -273,7 +272,6 @@ class ElasticSearch(ExtendedApiResource):
         # obj = es.GenericDocument(title="Paolo", type="Donorio")
         # obj.save()
 
-        #############
         # # Wait if you want to have all recent data
         # import time
         # time.sleep(2)
@@ -281,27 +279,60 @@ class ElasticSearch(ExtendedApiResource):
         #############
         # Normal Search
         output = []
+## // TO FIX:
+# move to elastic class
         results = es.FedappCatalog.search().execute().to_dict()
         for element in results['hits']['hits']:
             output.append(element['_source'])
-
-        # for hit in es.FedappCatalog.search().execute():
-        #     print("Hit:", str(hit))
-
-        #############
-        # # Match on multiple fields
-        # m = MultiMatch(fields=["title", "title_suggest"], query="donorio")
-        # i.search().query(m).execute()
 
         return output
 
     # @auth.login_required
     @decorate.apimethod
     def post(self):
-
 ## TO BE FIXED
-        j = self.get_input()
-        return j
+
+        parameters = self.get_input()
+        if len(parameters) < 1:
+            return self.force_response(
+                errors={'parameters': 'no filters specified'})
+
+        ####################
+        es = self.global_get_service('elasticsearch')
+        doc = es.FedappCatalog
+
+        ############
+        key = '_all'
+        output = []
+
+## // TO FIX:
+# move to elastic class
+
+        # Search the keyword on all parameters
+        if key in parameters:
+            # Match on multiple fields
+# // TO FIX:
+# search dynamically all fields inside the doc attributes?
+            fields = [
+                'name', 'format', 'owner', 'locations', 'metadata', 'tags'
+            ]
+            m = MultiMatch(fields=fields, query=parameters[key])
+            results = doc.search().query(m).execute().to_dict()
+            for element in results['hits']['hits']:
+                # print("TEST", element)
+                output.append({
+                    '_data': element['_source'],
+                    '_meta': {'id': element['_id'], 'score': element['_score']}
+                })
+
+        else:
+            results = doc.search() \
+                .filter('term', **parameters).execute().to_dict()
+            for element in results['hits']['hits']:
+                # print("TEST", element)
+                output.append(element['_source'])
+
+        return output
 
 
 class ElasticSuggest(ExtendedApiResource):
