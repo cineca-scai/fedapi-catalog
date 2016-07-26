@@ -83,13 +83,15 @@ class Catalog(ExtendedApiResource):
 
         # Receive data
         input_json = self.get_input()
+        elastic_data = {}
 
         # Verify if the user is available
         key = 'owner'
         if key not in input_json:
             return self.force_response(errors={key: 'missing JSON parameter'})
+        elastic_data[key] = input_json[key]
 
-        # Connect the graph
+        # Connect services
         graph = self.global_get_service('neo4j')
         es = self.global_get_service('elasticsearch')
         dobj = None
@@ -112,6 +114,7 @@ class Catalog(ExtendedApiResource):
 
         # Location
         key = 'locations'
+        elastic_data[key] = []
         try:
             for location in input_json.pop(key):
 
@@ -120,6 +123,7 @@ class Catalog(ExtendedApiResource):
                     self.timestamp_from_string(location['created'])
                 locobj = graph.Location.get_or_create(location).pop()
                 dobj.located.connect(locobj)
+                elastic_data[key].append(location['url'])
 
                 # Add to elastic search suggestions
                 es.get_or_create_suggestion(
@@ -132,12 +136,14 @@ class Catalog(ExtendedApiResource):
 
         # Metadata
         key = 'metadata'
+        elastic_data[key] = []
         for meta in input_json.pop(key):
             try:
                 for k, v in meta.items():
                     metaobj = graph.MetaData.get_or_create(
                         {'key': k, 'value': v}).pop()
                     dobj.described.connect(metaobj)
+                    elastic_data[key].append(v)
 
                     # Add to elastic search suggestions
                     es.get_or_create_suggestion(
@@ -150,11 +156,13 @@ class Catalog(ExtendedApiResource):
 
         # Tags
         key = 'tags'
+        elastic_data[key] = []
         for tag in input_json.pop(key):
             try:
                 tagobj = \
                     graph.Tag.get_or_create({'name': tag}).pop()
                 dobj.tagged.connect(tagobj)
+                elastic_data[key].append(tag)
 
                 # Add to elastic search suggestions
                 es.get_or_create_suggestion(
@@ -171,18 +179,81 @@ class Catalog(ExtendedApiResource):
             self.timestamp_from_string(input_json['updated'])
         input_json['id'] = uuid
 
+        ###
         key = 'logicalName'
         if key not in input_json:
             input_json[key] = os.path.basename(input_json['path'])
+        elastic_data['name'] = input_json[key]
 
-        # Add to elastic search suggestions
+        # Add logicalName to elastic search suggestions
         es.get_or_create_suggestion(
             es.GenericSuggestion, text=input_json[key], payload={'type': key})
 
+        ###
+        key = 'format'
+        if key not in input_json \
+           or input_json[key] is None or input_json[key].strip() == '':
+            # If missing format, take the extension in upper case
+            if '.' in input_json['logicalName']:
+                pos = input_json['logicalName'].index('.')
+                input_json[key] = input_json['logicalName'][pos:].upper()
+
+        # Add format to elastic search suggestions
+        if input_json[key].strip() != '':
+            elastic_data[key] = input_json[key]
+            es.get_or_create_suggestion(
+                es.GenericSuggestion,
+                text=input_json[key], payload={'type': key})
+
+        ################
+        # Save the main object to graph
         graph.DataObject.create_or_update(input_json)
+        # Save the main object to elasticsearch
+        es.get_or_create(es.FedappCatalog, elastic_data, forced_id=dobj.id)
+        # Note: we are using the same ID inside the graph and elasticsearch
+
         logger.debug("Updated obj %s" % dobj.id)
 
         # Return the UUID
+        return uuid
+
+    # @auth.login_required
+    @decorate.apimethod
+    def delete(self, uuid):
+
+        graph = self.global_get_service('neo4j')
+        es = self.global_get_service('elasticsearch')
+
+        # Delete elasticsearch document
+        try:
+            es.FedappCatalog.get(uuid).delete()
+        except Exception as e:
+            logger.info("Failed to delete elastic id '%s'\n%s" % (uuid, e))
+            pass
+
+        # Recover the graph node
+        try:
+            dobj = graph.DataObject.nodes.get(id=uuid)
+        except graph.ProvidedUser.DoesNotExist:
+            return self.force_response(errors={uuid: 'could not be found'})
+        logger.debug("Requested %s" % dobj)
+
+        print("TEST 1", dobj.logicalName)
+
+        # Delete elasticsearch suggested name
+        try:
+            out = es.GenericSuggestion.search() \
+                .query('match', suggestme=dobj.logicalName).execute()
+            for element in out.to_dict()['hits']['hits']:
+                print("TEST 2", element['_id'])
+                es.GenericSuggestion.get(element['_id']).delete()
+        except Exception as e:
+            logger.info("Failed to remove elastic suggestion\n%s" % e)
+            pass
+
+        # Delete this graph node
+        dobj.delete()
+
         return uuid
 
 
@@ -197,13 +268,9 @@ class ElasticSearch(ExtendedApiResource):
         print(es._connection)
 
         #############
-        # # Insert
+        # # Insert example
         # print(es.GenericDocument, es._connection)
         # obj = es.GenericDocument(title="Paolo", type="Donorio")
-        # obj.save()
-        # obj = es.GenericDocument(title="Mattia", type="Danton")
-        # obj.save()
-        # obj = es.GenericDocument(title="Matteo", type="Palloc")
         # obj.save()
 
         #############
@@ -213,20 +280,26 @@ class ElasticSearch(ExtendedApiResource):
 
         #############
         # Normal Search
-        # for hit in es.GenericDocument.search().execute():
-        #     print("Hit", hit)
+        output = []
+        results = es.FedappCatalog.search().execute().to_dict()
+        for element in results['hits']['hits']:
+            output.append(element['_source'])
+
+        # for hit in es.FedappCatalog.search().execute():
+        #     print("Hit:", str(hit))
 
         #############
         # # Match on multiple fields
         # m = MultiMatch(fields=["title", "title_suggest"], query="donorio")
         # i.search().query(m).execute()
 
-        return 'Hello'
+        return output
 
     # @auth.login_required
     @decorate.apimethod
     def post(self):
 
+## TO BE FIXED
         j = self.get_input()
         return j
 

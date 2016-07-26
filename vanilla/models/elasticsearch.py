@@ -32,8 +32,27 @@ class GenericDocument(DocType):
 class GenericSuggestion(DocType):
 
     suggestme = Completion(payloads=True)
-    # value = Completion(payloads=True)
-    # type = String()
 
     class Meta:
         index = 'suggestion'
+
+
+class FedappCatalog(DocType):
+
+    name = String()
+    format = String()
+    owner = String()
+
+    locations = String()  # this is a list
+    metadata = String()  # this is a list
+    tags = String()  # this is a list
+
+    # metadata = Nested(
+    #     doc_class=Metadata,
+    #     properties={
+    #         'key': String()
+    #     }
+    # )
+
+    class Meta:
+        index = 'generic'
