@@ -8,8 +8,8 @@ rest:
     # Graphdb must be called gdb
     - graphdb:gdb
 #     # Elasticsearch must be called el
-# ## KIBANA?
     - searchindex:el
+# ## KIBANA?
 
 # worker:
 #   # command: sleep infinity
