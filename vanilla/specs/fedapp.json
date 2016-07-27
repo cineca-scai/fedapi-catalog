@@ -15,8 +15,8 @@
             "suggest/<string:keyword>"
         ],
         "ElasticSearch": [
-            "search",
-            "search/<string:keyword>"
+            "search"
+            // "search/<string:keyword>"
         ]
     }
 }

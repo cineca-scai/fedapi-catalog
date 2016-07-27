@@ -181,7 +181,7 @@ fi
 
 # # Check if init has been executed
 
-# volumes=`$vcom ls | awk '{print $NF}' | grep "^${docker_volumes_prefix}_"`
+volumes=`$vcom ls | awk '{print $NF}' | grep "^${docker_volumes_prefix}_"`
 
 # #echo -e "VOLUMES are\n*$volumes*"
 # if [ "$volumes"  == "" ]; then
@@ -262,18 +262,21 @@ elif [ "$1" == "clean" ]; then
     echo "are you really sure?"
     sleep 5
 
+## // TO FIX:
+# does it really work?
+
     # From docker-compose man:
     # > "down": Stop and remove containers, networks, images, and volumes
     $compose_run down
 
     # $compose_run stop
     # $compose_run rm -f
-    # for volume in $volumes;
-    # do
-    #     echo "Remove $volume volume"
-    #     $vcom rm $volume
-    #     sleep 1
-    # done
+    for volume in $volumes;
+    do
+        echo "Remove $volume volume"
+        $vcom rm $volume
+        sleep 1
+    done
     exit 0
 
 elif [ "$1" == "addiuser" ]; then

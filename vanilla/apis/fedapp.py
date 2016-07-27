@@ -5,7 +5,6 @@ from __future__ import absolute_import
 import os
 from commons.logs import get_logger
 from commons.services.uuid import getUUID
-from elasticsearch_dsl.query import MultiMatch
 from ..base import ExtendedApiResource
 from .. import decorators as decorate
 
@@ -263,35 +262,14 @@ class ElasticSearch(ExtendedApiResource):
     @decorate.apimethod
     def get(self, keyword=None):
 
-        ####################
         es = self.global_get_service('elasticsearch')
-        print(es._connection)
 
-        #############
-        # # Insert example
-        # print(es.GenericDocument, es._connection)
-        # obj = es.GenericDocument(title="Paolo", type="Donorio")
-        # obj.save()
-
-        # # Wait if you want to have all recent data
-        # import time
-        # time.sleep(2)
-
-        #############
         # Normal Search
-        output = []
-## // TO FIX:
-# move to elastic class
-        results = es.FedappCatalog.search().execute().to_dict()
-        for element in results['hits']['hits']:
-            output.append(element['_source'])
-
-        return output
+        return es.search(es.FedappCatalog)
 
     # @auth.login_required
     @decorate.apimethod
     def post(self):
-## TO BE FIXED
 
         parameters = self.get_input()
         if len(parameters) < 1:
@@ -306,32 +284,13 @@ class ElasticSearch(ExtendedApiResource):
         key = '_all'
         output = []
 
-## // TO FIX:
-# move to elastic class
-
         # Search the keyword on all parameters
         if key in parameters:
-            # Match on multiple fields
-# // TO FIX:
-# search dynamically all fields inside the doc attributes?
-            fields = [
-                'name', 'format', 'owner', 'locations', 'metadata', 'tags'
-            ]
-            m = MultiMatch(fields=fields, query=parameters[key])
-            results = doc.search().query(m).execute().to_dict()
-            for element in results['hits']['hits']:
-                # print("TEST", element)
-                output.append({
-                    '_data': element['_source'],
-                    '_meta': {'id': element['_id'], 'score': element['_score']}
-                })
-
+            # Match on multiple fields (in this case, all)
+            output = es.search_multifields(doc, parameters[key])
         else:
-            results = doc.search() \
-                .filter('term', **parameters).execute().to_dict()
-            for element in results['hits']['hits']:
-                # print("TEST", element)
-                output.append(element['_source'])
+            # Filter single field
+            output = es.search(doc, parameters, filter=True)
 
         return output
 
@@ -378,7 +337,7 @@ class Cleaner(ExtendedApiResource):
         logger.debug("Clean graph")
         self.global_get_service('neo4j').clean_all()
 
-        # Force a new elastic object: to re-build removed indexes
+        # Force a new elastic instance: to re-build removed indexes
         self.global_get_service('elasticsearch', force=True)
 
         return True
