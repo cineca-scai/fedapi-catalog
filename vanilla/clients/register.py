@@ -53,10 +53,11 @@ headers = {
 
 main_uri = URL + 'dataobjects'
 
-#######################
-# Clear all data...
-r = requests.get(URL + 'cleaner/all')
-logger.info("Cleaned all previous data")
+## REMOVE COMMENTS if you want to clean the whole database
+# #######################
+# # Clear all data...
+# r = requests.get(URL + 'cleaner/all')
+# logger.info("Cleaned all previous data")
 
 #######################
 # Load input(s)
