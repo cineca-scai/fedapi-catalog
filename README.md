@@ -9,6 +9,7 @@ This project is intented to test the behavior of a REST API server which fills o
 * The neomodels mapping of our data into a graph db can be found [here](vanilla/models/neo4j.py).
 * The DSL models for elasticsearch indexes can be found [inside this file](vanilla/models/elasticsearch.py)
 * The implementation of current endpoints is available at [this python class](vanilla/apis/fedapp.py)
+* Input data is simple JSON, see [available examples](vanilla/input).
 
 
 ### Pre-requisites

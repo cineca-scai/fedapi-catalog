@@ -1,0 +1,25 @@
+{
+    "path": "/this/is/my/path/superpicture.jpg",
+    "checksum": "tobeornottobe",
+    "created": "0123456789.012",
+    "updated": "0123456789.013",
+    "description": "General description of the digital entity by fs",
+    "owner": "fsalvado",
+    "locations": [
+        {
+            "created": "1468479959.56506",
+            "url": "https://some.it/dontknow"
+        }
+    ],
+    "metadata": [
+        {
+            "one element": "a number should not be a string",
+            "second element": "15"
+        }
+    ],
+    "tags": [
+        "sad",
+        "why"
+    ],
+    "size": "4096"
+}

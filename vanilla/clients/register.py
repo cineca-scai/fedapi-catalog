@@ -18,7 +18,8 @@ import time
 PROTOCOL = 'http'
 HOST = 'apiserver'
 # Default is 80
-PORT = os.environ.get('APISERVER_PORT', 80).split(':')[::-1][0]
+DEFAULT_PORT = 80
+PORT = os.environ.get('APISERVER_PORT', str(DEFAULT_PORT)).split(':')[::-1][0]
 URL = "%s://%s:%s/api/" % (PROTOCOL, HOST, PORT)
 INPUT_DIR = '/tmp/input'
 
@@ -51,7 +52,6 @@ headers = {
 # opts = {'stream': True, 'headers': headers, 'timeout': 5}
 
 main_uri = URL + 'dataobjects'
-myuser = 'pdonorio'
 
 #######################
 # Clear all data...
@@ -65,17 +65,19 @@ for filename in glob.glob(os.path.join(INPUT_DIR, "*") + ".json"):
 
     with open(filename, encoding='utf-8') as f:
 
+        try:
+            data = json.load(f)
+        except Exception as e:
+            logger.error("Failed to read input '%s':\n%s" % (filename, e))
+            exit(1)
+        myuser = data['owner']
+
         # Ask id: POST
         r = requests.post(main_uri, params={'owner': myuser})
         id = check_api_output(r)
         logger.info("POST: received ID %s" % id)
 
         # Update metadata: PUT
-        try:
-            data = json.load(f)
-        except Exception as e:
-            logger.error("Failed to read input '%s':\n%s" % (filename, e))
-            exit(1)
 
         r = requests.put(main_uri + '/' + id, data=json.dumps(data))
         out = check_api_output(r)
@@ -84,7 +86,6 @@ for filename in glob.glob(os.path.join(INPUT_DIR, "*") + ".json"):
 logger.info("Completed data registration")
 logger.warning("Debug exit. Remove this " +
                "if you'd like to test API queries in Python.")
-exit(0)
 
 # Wait for index building
 time.sleep(2)
